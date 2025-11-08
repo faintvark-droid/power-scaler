@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Power Scaler Pro</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --accent-1: #3b82f6;
+            --accent-2: #60a5fa;
+            --accent-3: #a78bfa;
+        }
+
+        body.light {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI'; background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary)); color: var(--text-primary); transition: all 0.3s; }
+        
+        nav { position: fixed; top: 0; width: 100%; background: rgba(15, 23, 42, 0.95); z-index: 100; padding: 1rem 2rem; border-bottom: 1px solid rgba(59, 130, 246, 0.5); display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: 900; background: linear-gradient(to right, var(--accent-2), var(--accent-3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .theme-toggle { background: var(--accent-1); border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; color: white; font-weight: bold; }
+
+        .hero { padding: 120px 20px 60px; text-align: center; }
+        .hero h1 { font-size: 64px; font-weight: 900; margin-bottom: 20px; background: linear-gradient(to right, var(--accent-2), var(--accent-3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+        .section { padding: 60px 20px; max-width: 1400px; margin: 0 auto; }
+        .title { text-align: center; font-size: 40px; margin-bottom: 30px; }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 20px; background: var(--bg-secondary); border: 2px solid rgba(59, 130, 246, 0.5); border-radius: 6px; cursor: pointer; color: var(--text-primary); font-weight: bold; }
+        .tab-btn.active { background: var(--accent-1); color: white; }
+
+        input { width: 100%; padding: 12px; background: var(--bg-secondary); border: 2px solid rgba(59, 130, 246, 0.5); border-radius: 6px; color: var(--text-primary); margin-bottom: 12px; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+
+        .btn { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--accent-1), var(--accent-3)); border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; margin-bottom: 12px; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .result { background: var(--bg-secondary); border: 2px solid rgba(59, 130, 246, 0.5); border-radius: 8px; padding: 20px; margin-top: 20px; min-height: 200px; }
+
+        .loading { text-align: center; }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(59, 130, 246, 0.3); border-top: 3px solid var(--accent-2); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .char-header { display: flex; gap: 20px; margin-bottom: 20px; align-items: flex-start; }
+        .char-image { width: 150px; height: 150px; border-radius: 8px; border: 2px solid var(--accent-1); object-fit: cover; }
+        .char-title { flex: 1; }
+        .char-name { color: var(--accent-2); font-size: 24px; font-weight: bold; }
+
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 15px 0; }
+        .stat-box { background: var(--bg-primary); border: 2px solid rgba(59, 130, 246, 0.5); border-left: 4px solid var(--accent-1); padding: 12px; border-radius: 6px; cursor: pointer; }
+        .stat-label { font-size: 11px; font-weight: bold; color: var(--accent-2); }
+        .stat-value { font-size: 13px; color: var(--text-secondary); margin-top: 6px; }
+
+        .info-box { background: var(--bg-primary); border: 2px solid rgba(59, 130, 246, 0.3); padding: 14px; border-radius: 6px; margin: 12px 0; }
+        .info-title { font-weight: bold; color: var(--accent-2); font-size: 12px; margin-bottom: 8px; }
+        .info-content { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+
+        .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); }
+        .modal-content { background: var(--bg-secondary); margin: 5% auto; padding: 20px; border: 2px solid var(--accent-1); border-radius: 8px; width: 90%; max-width: 1000px; max-height: 85vh; overflow-y: auto; }
+        .modal-close { color: var(--accent-2); float: right; font-size: 28px; cursor: pointer; }
+
+        .tier-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 20px; }
+
+        .tier-card { background: var(--bg-secondary); border: 2px solid rgba(59, 130, 246, 0.5); padding: 15px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .tier-card:hover { background: var(--bg-primary); border-color: var(--accent-2); transform: translateY(-2px); }
+
+        .tier-name { font-weight: bold; color: var(--accent-2); font-size: 16px; margin-bottom: 8px; }
+        .tier-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.5; }
+        .tier-chars { font-size: 11px; color: #fbbf24; font-weight: bold; }
+
+        .battle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+        .battle-card { background: var(--bg-primary); border: 2px solid rgba(59, 130, 246, 0.5); padding: 15px; border-radius: 6px; }
+        .battle-card img { width: 100%; max-width: 200px; border-radius: 6px; margin-bottom: 10px; }
+
+        .winner-box { background: linear-gradient(135deg, var(--accent-1), var(--accent-3)); color: white; padding: 20px; border-radius: 6px; text-align: center; font-weight: bold; margin: 15px 0; font-size: 18px; }
+
+        .feature-btn { padding: 8px 16px; background: var(--bg-secondary); border: 1px solid var(--accent-1); border-radius: 4px; cursor: pointer; margin: 5px; font-size: 12px; color: var(--text-primary); }
+        .feature-btn:hover { background: var(--accent-1); color: white; }
+
+        footer { background: rgba(15, 23, 42, 0.95); border-top: 1px solid rgba(59, 130, 246, 0.5); padding: 20px; text-align: center; color: var(--text-secondary); font-size: 12px; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">⚡ Power Scaler</div>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+    </nav>
+
+    <section class="hero">
+        <h1>⚡ Power Scaler</h1>
+        <p>Standard Power Scaling Tiers | Accurate Research | Battle System</p>
+    </section>
+
+    <section class="section">
+        <h2 class="title">⚔️ Character Analysis & Battle</h2>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('analyze')">🔍 ANALYZE</button>
+            <button class="tab-btn" onclick="switchTab('battle')">⚔️ BATTLE</button>
+            <button class="tab-btn" onclick="switchTab('tiers')">📊 TIER GUIDE</button>
+        </div>
+
+        <div id="analyze-tab">
+            <input type="text" id="charSearch" placeholder="Enter character (Goku, Superman, Naruto...)">
+            <button class="btn" id="analyzeBtn" onclick="analyzeSearch()">🔍 ANALYZE</button>
+            <div id="analyzeResult" class="result"><p style="text-align: center;">👉 Enter a character name!</p></div>
+        </div>
+
+        <div id="battle-tab" style="display:none;">
+            <div class="input-row">
+                <input type="text" id="char1Search" placeholder="Character 1">
+                <input type="text" id="char2Search" placeholder="Character 2">
+            </div>
+            <button class="btn" id="battleBtn" onclick="battleSearch()">⚔️ BATTLE</button>
+            <div id="battleResult" class="result"><p style="text-align: center;">👉 Enter 2 characters!</p></div>
+        </div>
+
+        <div id="tiers-tab" style="display:none;">
+            <h3 style="color: var(--accent-2); margin-bottom: 10px;">📊 Standard Power Scaling Tiers</h3>
+            <div id="tierGuide"></div>
+        </div>
+    </section>
+
+    <div id="tierModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="document.getElementById('tierModal').style.display='none'">&times;</span>
+            <h2 style="color: var(--accent-2); margin-bottom: 15px;" id="tierModalTitle"></h2>
+            <div id="tierExplanation"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Power Scaler. Standard Tiers | Accurate Scaling</p>
+    </footer>
+
+    <script>
+        const tiers = [
+            { name: 'Boundless', desc: 'Transcends all concepts, omnipotence itself, beyond all layers of fiction.' },
+            { name: 'High Outerversal', desc: 'Nearly omnipotent, transcends almost all narrative layers and dimensional structures.' },
+            { name: 'Outerversal', desc: 'Completely outside reality, transcends all dimensions and space-time.' },
+            { name: 'Low Outerversal', desc: 'Barely outerversal level, transcends dimensional hierarchies but with limitations.' },
+            { name: 'High Hyperversal', desc: 'High tier hyperversal, transcends multiple outerversal hierarchies.' },
+            { name: 'Hyperversal', desc: 'Beyond dimensional scaling, transcends infinite dimensional structures.' },
+            { name: 'Low Hyperversal', desc: 'Barely hyperversal, some outerversal level feats.' },
+            { name: 'High Complex Multi', desc: 'High tier complex multiverses, transcends omniversal concepts.' },
+            { name: 'Complex Multi', desc: 'Affects complex multiverses, transcends omniversal concepts.' },
+            { name: 'Low Complex Multi', desc: 'Low tier complex multiverses, barely complex multiversal.' },
+            { name: 'High Multiverse', desc: 'High tier multiversal, can destroy many multiverses easily.' },
+            { name: 'Multiversal', desc: 'Can destroy/create multiple universes and infinite timelines.' },
+            { name: 'Low Multiverse', desc: 'Low tier multiversal, barely affects multiple universes.' },
+            { name: 'High Universe', desc: 'High tier universal, can destroy large portions of universe.' },
+            { name: 'Universal', desc: 'Can destroy or create a full universe.' },
+            { name: 'Low Universe', desc: 'Low tier universal, barely universe level destruction.' },
+            { name: 'Multi Galaxy', desc: 'Can destroy multiple galaxies easily.' },
+            { name: 'Galaxy', desc: 'Can destroy entire galaxies with ease.' },
+            { name: 'Large Star', desc: 'Can destroy large stars and massive celestial bodies.' },
+            { name: 'Star', desc: 'Can destroy stars and massive celestial bodies.' },
+            { name: 'Planetary', desc: 'Can destroy planets or moons.' },
+            { name: 'Moon', desc: 'Can destroy moons and lunar scale destruction.' },
+            { name: 'Country', desc: 'Can destroy entire countries with ease.' },
+            { name: 'Continental', desc: 'Can destroy entire continents.' },
+            { name: 'Island', desc: 'Can destroy large islands.' },
+            { name: 'Mountain', desc: 'Can level mountain ranges.' },
+            { name: 'City', desc: 'Can destroy entire cities.' },
+            { name: 'Town', desc: 'Can destroy towns and large areas.' },
+            { name: 'Building', desc: 'Can destroy large buildings and structures.' },
+            { name: 'Wall', desc: 'Can break walls and large structures.' },
+            { name: 'Street', desc: 'Street level power, can fight in urban areas.' },
+            { name: 'Superhuman', desc: 'Peak human level, superhuman but not supernatural.' },
+            { name: 'Human', desc: 'Average human level, normal human abilities.' }
+        ];
+
+        let currentTheme = 'dark';
+
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.className = currentTheme === 'light' ? 'light' : '';
+            event.target.textContent = currentTheme === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+
+        function switchTab(tab) {
+            const tabs = ['analyze-tab', 'battle-tab', 'tiers-tab'];
+            tabs.forEach(t => document.getElementById(t).style.display = 'none');
+            document.getElementById(tab + '-tab').style.display = 'block';
+            
+            const btns = document.querySelectorAll('.tab-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (tab === 'tiers') loadTierGuide();
+        }
+
+        function loadTierGuide() {
+            let html = '<div class="tier-grid">';
+            tiers.forEach(t => {
+                html += `<div class="tier-card" onclick="showTierModal('${t.name}', '${t.desc}')">
+                    <div class="tier-name">⚡ ${t.name}</div>
+                    <div class="tier-desc">${t.desc}</div>
+                </div>`;
+            });
+            html += '</div>';
+            document.getElementById('tierGuide').innerHTML = html;
+        }
+
+        function showTierModal(name, desc) {
+            document.getElementById('tierModalTitle').textContent = name;
+            document.getElementById('tierExplanation').innerHTML = `
+                <div style="font-size: 14px; line-height: 2;">
+                    <p><strong style="color: var(--accent-2);">Description:</strong><br>${desc}</p>
+                </div>`;
+            document.getElementById('tierModal').style.display = 'block';
+        }
+
+        function showLoading(id) {
+            document.getElementById(id).innerHTML = '<div class="loading"><div class="spinner"></div><p style="margin-top: 10px;">🔍 Analyzing character...</p></div>';
+        }
+
+        async function getCharacterImage(charName) {
+            try {
+                const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(charName)}&prop=pageimages&pithumbsize=300&format=json&origin=*`;
+                const response = await fetch(searchUrl);
+                const data = await response.json();
+                const pages = data.query.pages;
+                for (let key in pages) {
+                    if (pages[key].thumbnail) return pages[key].thumbnail.source;
+                }
+                return null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function researchCharacter(charName) {
+            try {
+                const response = await fetch("https://api.anthropic.com/v1/messages", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: "claude-sonnet-4-20250514",
+                        max_tokens: 3500,
+                        messages: [{
+                            role: "user",
+                            content: `ACCURATE POWER SCALE: "${charName}". Use ONLY canon feats. Research thoroughly. Return ONLY raw JSON:
+{
+  "name": "Full name",
+  "verse": "Series name",
+  "description": "2-3 sentences about the character",
+  "highBall": "Most generous accurate tier based on scaling",
+  "midBall": "Realistic middle tier estimate",
+  "lowBall": "Conservative low tier estimate",
+  "reasoning": "Detailed explanation of why these tiers based on canon feats",
+  "speed": "Speed tier",
+  "strength": "Strength level",
+  "durability": "Durability level",
+  "abilities": "5+ main abilities",
+  "feats": "3-5 strongest canon feats",
+  "weaknesses": "2-3 weaknesses"
+}
+
+VALID TIERS (in order from strongest to weakest):
+Boundless, High Outerversal, Outerversal, Low Outerversal, High Hyperversal, Hyperversal, Low Hyperversal, High Complex Multi, Complex Multi, Low Complex Multi, High Multiverse, Multiversal, Low Multiverse, High Universe, Universal, Low Universe, Multi Galaxy, Galaxy, Large Star, Star, Planetary, Moon, Country, Continental, Island, Mountain, City, Town, Building, Wall, Street, Superhuman, Human
+
+Be EXTREMELY THOROUGH and ACCURATE. Only use real canonical feats.`
+                        }]
+                    })
+                });
+
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const data = await response.json();
+                let jsonStr = data.content[0].text.trim();
+                if (jsonStr.startsWith('```')) jsonStr = jsonStr.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+                return JSON.parse(jsonStr);
+            } catch (error) {
+                console.error('Error:', error);
+                return null;
+            }
+        }
+
+        async function analyzeSearch() {
+            const input = document.getElementById('charSearch').value.trim();
+            if (!input) {
+                document.getElementById('analyzeResult').innerHTML = '<p style="color: #f87171;">❌ Enter character!</p>';
+                return;
+            }
+
+            showLoading('analyzeResult');
+            document.getElementById('analyzeBtn').disabled = true;
+
+            const charData = await researchCharacter(input);
+            const image = await getCharacterImage(input);
+
+            document.getElementById('analyzeBtn').disabled = false;
+
+            if (!charData || !charData.name) {
+                document.getElementById('analyzeResult').innerHTML = '<p style="color: #f87171;">❌ Not found!</p>';
+                return;
+            }
+
+            displayAnalyze(charData, image);
+        }
+
+        function displayAnalyze(c, img) {
+            let html = `<div class="char-header">`;
+            if (img) html += `<img src="${img}" class="char-image" onerror="this.style.display='none'">`;
+            html += `<div class="char-title">
+                <div class="char-name">${c.name}</div>
+                <div style="color: var(--text-secondary); margin-top: 5px;"><strong>${c.verse}</strong></div>
+                <div style="color: var(--text-secondary); font-size: 12px; margin-top: 10px;">${c.description}</div>
+            </div></div>`;
+
+            html += `<div class="stat-grid">
+                <div class="stat-box"><div class="stat-label">🔥 HIGH BALL</div><div class="stat-value">${c.highBall}</div></div>
+                <div class="stat-box"><div class="stat-label">⚡ MID BALL</div><div class="stat-value">${c.midBall}</div></div>
+                <div class="stat-box"><div class="stat-label">📉 LOW BALL</div><div class="stat-value">${c.lowBall}</div></div>
+            </div>`;
+
+            html += `<div class="stat-grid">
+                <div class="stat-box"><div class="stat-label">⚡ SPEED</div><div class="stat-value">${c.speed}</div></div>
+                <div class="stat-box"><div class="stat-label">💪 STRENGTH</div><div class="stat-value">${c.strength}</div></div>
+                <div class="stat-box"><div class="stat-label">🛡️ DURABILITY</div><div class="stat-value">${c.durability}</div></div>
+            </div>`;
+
+            html += `
+            <div class="info-box"><div class="info-title">🎯 ABILITIES</div><div class="info-content">${c.abilities}</div></div>
+            <div class="info-box"><div class="info-title">🏆 BEST FEATS</div><div class="info-content">${c.feats}</div></div>
+            <div class="info-box"><div class="info-title">⚠️ WEAKNESSES</div><div class="info-content">${c.weaknesses}</div></div>
+            <div class="info-box"><div class="info-title">🧠 TIER REASONING</div><div class="info-content">${c.reasoning}</div></div>`;
+
+            document.getElementById('analyzeResult').innerHTML = html;
+        }
+
+        async function battleSearch() {
+            const input1 = document.getElementById('char1Search').value.trim();
+            const input2 = document.getElementById('char2Search').value.trim();
+
+            if (!input1 || !input2) {
+                document.getElementById('battleResult').innerHTML = '<p style="color: #f87171;">❌ Enter both!</p>';
+                return;
+            }
+
+            showLoading('battleResult');
+            document.getElementById('battleBtn').disabled = true;
+
+            const c1 = await researchCharacter(input1);
+            const c2 = await researchCharacter(input2);
+
+            document.getElementById('battleBtn').disabled = false;
+
+            if (!c1 || !c1.name || !c2 || !c2.name) {
+                document.getElementById('battleResult').innerHTML = '<p style="color: #f87171;">❌ Error!</p>';
+                return;
+            }
+
+            displayBattle(c1, c2);
+        }
+
+        function displayBattle(c1, c2) {
+            const tierRank = {
+                'Boundless': 0, 'High Outerversal': 1, 'Outerversal': 2, 'Low Outerversal': 3,
+                'High Hyperversal': 4, 'Hyperversal': 5, 'Low Hyperversal': 6,
+                'High Complex Multi': 7, 'Complex Multi': 8, 'Low Complex Multi': 9,
+                'High Multiverse': 10, 'Multiversal': 11, 'Low Multiverse': 12,
+                'High Universe': 13, 'Universal': 14, 'Low Universe': 15,
+                'Multi Galaxy': 16, 'Galaxy': 17, 'Large Star': 18, 'Star': 19,
+                'Planetary': 20, 'Moon': 21, 'Country': 22, 'Continental': 23,
+                'Island': 24, 'Mountain': 25, 'City': 26, 'Town': 27,
+                'Building': 28, 'Wall': 29, 'Street': 30, 'Superhuman': 31, 'Human': 32
+            };
+
+            const getR = (t) => {
+                for (let [k, v] of Object.entries(tierRank)) {
+                    if (t.includes(k)) return v;
+                }
+                return 99;
+            };
+
+            const r1High = getR(c1.highBall);
+            const r2High = getR(c2.highBall);
+            const winner = r1High < r2High ? c1.name : r2High < r1High ? c2.name : 'Draw';
+
+            let html = `<div style="text-align: center; font-size: 18px; font-weight: bold; color: var(--accent-2); margin-bottom: 20px;">⚔️ ${c1.name} VS ${c2.name}</div>`;
+
+            html += `<div class="battle-grid">
+                <div class="battle-card">
+                    <h3>🔴 ${c1.name}</h3>
+                    <div class="stat-box" style="margin-bottom: 8px;"><div class="stat-label">VERSE</div><div class="stat-value">${c1.verse}</div></div>
+                    <div class="stat-box" style="margin-bottom: 8px;"><div class="stat-label">🔥 HIGH BALL</div><div class="stat-value">${c1.highBall}</div></div>
+                    <div class="stat-box" style="margin-bottom: 8px;"><div class="stat-label">⚡ MID BALL</div><div class="stat-value">${c1.midBall}</div></div>
+                    <div class="stat-box"><div class="stat-label">📉 LOW BALL</div><div class="stat-value">${c1.lowBall}</div></div>
+                </div>
+                <div class="battle-card">
+                    <h3>🔵 ${c2.name}</h3>
+                    <div class="stat-box" style="margin-bottom: 8px;"><div class="stat-label">VERSE</div><div class="stat-value">${c2.verse}</div></div>
+                    <div class="stat-box" style="margin-bottom: 8px;"><div class="stat-label">🔥 HIGH BALL</div><div class="stat-value">${c2.highBall}</div></div>
+                    <div class="stat-box" style="margin-bottom: 8px;"><div class="stat-label">⚡ MID BALL</div><div class="stat-value">${c2.midBall}</div></div>
+                    <div class="stat-box"><div class="stat-label">📉 LOW BALL</div><div class="stat-value">${c2.lowBall}</div></div>
+                </div>
+            </div>
+            <div class="winner-box">🏆 WINNER (High Ball): ${winner}</div>`;
+
+            document.getElementById('battleResult').innerHTML = html;
+        }
+    </script>
+</body>
+</html>
